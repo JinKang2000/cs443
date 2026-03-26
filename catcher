@@ -1,22 +1,21 @@
 #!/bin/bash
-
 echo "Waiting for the exploit to launch..."
 
 while true; do
-  # Find the newest process that matches our exploit or the shell it spawns
-  # -n gets the newest PID, -x matches the exact name
   PID=$(pgrep -n "exploit|pkexec|bash")
 
   if [ ! -z "$PID" ]; then
     clear
+    # This is the line that proves what the process actually IS
+    PNAME=$(cat /proc/$PID/comm 2>/dev/null)
+    
     echo "!!! TARGET ACQUIRED !!!"
-    echo "Tracking FINAL CHILD PID: $PID"
+    echo "Tracking PID: $PID"
+    echo "Process Name: $PNAME"  # <--- Proves the identity
     echo "-------------------------------------------"
-    # We use sudo because once the process hits root, 
-    # a normal user can't read its status file.
-    sudo watch -n 0.1 "grep -e 'Uid' /proc/$PID/status"
+    
+    watch -n 0.1 "echo 'Process: \$(cat /proc/$PID/comm)'; grep -e 'Uid' /proc/$PID/status"
     break
   fi
-  # Tiny sleep to prevent CPU spiking while waiting
   sleep 0.05
 done
